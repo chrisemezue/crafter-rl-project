@@ -12,7 +12,9 @@ Based on this [task](https://www.notion.so/Work-on-metric-to-quantitatively-eval
 The numbers at the end of each file represents the timestep of the evaluation.
 
 `attn_maps` => refers to the attention maps fresh out of the object centric model.
+
 `slot_masks` => refers to the same attention maps, but they have been made to fit the dimension of the environment. The shape of this usually fits the shape of the episode observation environment (`episode_observations`).
+
 `episode_details` => is a dict containing the list of episode rewards and episode lengths. I figured it would help to have these saved to foster our analysis. 
 > If there are more details that need to be saved for the later analysis, I plan to save them in this dict.
 
