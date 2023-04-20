@@ -93,8 +93,7 @@ class AttnMetric:
         # for given envmaps, the exhausitive list of objects and their representations
         # return all possible object reps and the number of all possible objects
         obj_list = []
-        # for i in range(self.envmaps.shape[0]):
-        for i in range(1):
+        for i in range(self.envmaps.shape[0]):
             for h_start in np.arange(0, self.imgsize, self.objsize):
                 for w_start in np.arange(0, self.imgsize, self.objsize):
                     curr_envmap = self.envmaps[i,:,h_start:h_start+self.objsize,w_start:w_start+self.objsize]
@@ -115,27 +114,7 @@ class AttnMetric:
                             print("there is an append with h_start %d, w_start %d" % (h_start, w_start))
                         obj_list.append(curr_envmap)
 
-        for i in range(1,2):
-            for h_start in [0]:
-                for w_start in [0]:
-                    curr_envmap = self.envmaps[i,:,h_start:h_start+self.objsize,w_start:w_start+self.objsize]
-                    if len(obj_list) == 0:
-                        obj_list.append(curr_envmap)
-                    
-                    new_append = False
-                    is_break = False
-                    for count, arr in enumerate(obj_list):
-                        if np.array_equal(arr.cpu().numpy(), curr_envmap.cpu().numpy()):
-                            if i==1: print("there is an equal")
-                            is_break = True
-                            break
-                    if count == len(obj_list)-1 and not is_break:
-                        new_append = True
-                    if new_append:
-                        if i == 1:
-                            print("there is an append with h_start %d, w_start %d" % (h_start, w_start))
-                        obj_list.append(curr_envmap)
-                        
+        
                         
         return obj_list, len(obj_list)
 
@@ -176,15 +155,15 @@ metric_cal = AttnMetric(objsize=8, path2attnmaps = path2attnmaps, path2slotmasks
                         path2envmaps = path2envmaps, path2envinfo = path2envinfo)
 
 #  visualization of the environment map
-for i in range(10):
-    plt.figure()
-    plt.imshow(metric_cal.envmaps[i,:,:8,:8].permute(1,2,0).cpu().numpy())
-    plt.savefig("/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/figures/" + "%d.png" % i)
+# for i in range(10):
+#     plt.figure()
+#     plt.imshow(metric_cal.envmaps[i,:,:8,:8].permute(1,2,0).cpu().numpy())
+#     plt.savefig("/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/figures/" + "%d.png" % i)
 
 # check object pixel level representation
-print(metric_cal.envmaps[0, 0, 0:8, 0:8].cpu().numpy())
-print(metric_cal.envmaps[0, 1, 0:8, 0:8].cpu().numpy())
-print(np.array_equal(metric_cal.envmaps[0, :, 0:8, 0:8].cpu().numpy(), metric_cal.envmaps[1, :, 0:8,0:8].cpu().numpy()))
+# print(metric_cal.envmaps[0, 0, 0:8, 0:8].cpu().numpy())
+# print(metric_cal.envmaps[0, 1, 0:8, 0:8].cpu().numpy())
+# print(np.array_equal(metric_cal.envmaps[0, :, 0:8, 0:8].cpu().numpy(), metric_cal.envmaps[1, :, 0:8,0:8].cpu().numpy()))
 # print(np.array_equal(metric_cal.envmaps[0, :, 8*1:8*2,8*5:8*6].cpu().numpy(), metric_cal.envmaps[0, :, 8*1:8*2,8*6:8*7].cpu().numpy()))
 
 
@@ -193,10 +172,10 @@ print(np.array_equal(metric_cal.envmaps[0, :, 0:8, 0:8].cpu().numpy(), metric_ca
 # metric_cal.plotAttnDist(metric_cal.slotmasks, savepath = "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/figures/debug_attndist.jpeg")
 
 # count the number of possible object and their corresponding representations
-# obj_list, l = metric_cal.ObjectDict()
-# print("number of objects:", l)
-# for i, obj in enumerate(obj_list[:20]):
-#     plt.figure()
+obj_list, l = metric_cal.ObjectDict()
+print("number of objects:", l)
+for i, obj in enumerate(obj_list[:20]):
+    plt.figure()
     
 #     plt.imshow(obj.permute(1,2,0).cpu().numpy())
 #     plt.savefig("/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/figures/" + "%d.png" % i)
