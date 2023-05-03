@@ -1,0 +1,10 @@
+Calculate attentions 
+
+- Input: activation map (slot masks, (episode_length * n_slots * patch_size * patch_size)), environment map ((epsiode_length * n_channels * height * width))
+- Step 1: Binarize the activation map
+    - Plot distribution of activation intensity
+    - Set the threshold value (75%) to binarize the activation map
+- Step 2: Count and Store all possible object representations within the environment [is there a better way doing this?]
+- step 3: Calculate the total number of configurations per tile
+    - return dict{all possible configurations}, #configurations per timestep per slot
+- Step 4: Calculate the number of configurations per object [todo]
