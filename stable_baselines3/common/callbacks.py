@@ -16,6 +16,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecEnv, sync_envs_norm
 from framework.visualize.plot_img_utils import post_process_output_imgs, concat_imgs_in_rec_mask_slots_in_a_row_CRAFTER, batch_to_rowwise_image
 from framework.visualize.plot import Video
 
+import pickle
+
 
 class BaseCallback(ABC):
     """
@@ -394,6 +396,20 @@ class EvalCallback(EventCallback):
                 warn=self.warn,
                 callback=self._log_success_callback,
             )
+            ## Added by Chris Emezue on 13.04.2023
+            SAVE_STEP = self.num_timesteps # self.n_calls was used before
+            SAVE_FOLDER_FOR_ATTN_MAPS = os.path.join(os.path.join(os.path.join(self.helper.args.save_folder_for_attn_maps,self.helper.args.wandb_tag),self.helper.wandb_id['run_name']),self.log_prefix)
+            os.makedirs(SAVE_FOLDER_FOR_ATTN_MAPS,exist_ok=True)
+
+            # Save the attn maps, before they got mapped to slot masks
+            with open(os.path.join(SAVE_FOLDER_FOR_ATTN_MAPS,f'attn_maps_{SAVE_STEP}'),'wb') as f:
+                pickle.dump(torch.stack(episode_attn_maps, dim=0),f)
+
+            # Save the episode rewards and episode lengths
+            with open(os.path.join(SAVE_FOLDER_FOR_ATTN_MAPS,f'episode_details_{SAVE_STEP}'),'wb') as f:
+                pickle.dump({'episode_lengths':episode_lengths,'episode_rewards':episode_rewards},f)
+            ###
+
             episode_observations = torch.stack(episode_observations, dim=0)
             episode_observations = episode_observations.squeeze()
             if episode_attn_maps[0] is not None:
@@ -413,6 +429,20 @@ class EvalCallback(EventCallback):
 
                 obs = episode_observations
                 slot_masks = episode_attn_maps
+
+                ## Added by Chris Emezue on 13.04.2023
+               
+                # Save the episode observations
+                with open(os.path.join(SAVE_FOLDER_FOR_ATTN_MAPS,f'episode_observations_{SAVE_STEP}'),'wb') as f:
+                    pickle.dump(obs,f)
+
+                # Save the slot attention masks
+                with open(os.path.join(SAVE_FOLDER_FOR_ATTN_MAPS,f'slot_masks_{SAVE_STEP}'),'wb') as f:
+                    pickle.dump(slot_masks,f)
+                ###
+                print(f'Saved evaluation attention maps to {SAVE_FOLDER_FOR_ATTN_MAPS}')
+                #breakpoint()
+
                 slot_masks_sum = slot_masks.sum(dim=1)
                 slot_masks_sum = repeat(slot_masks_sum, 'sl ... -> sl c ...', c=obs.shape[1])  # n_channels
                 img_rec = (obs + slot_masks_sum).clamp(0, 1)
