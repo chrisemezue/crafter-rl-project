@@ -10,14 +10,18 @@ def register_args(parser: framework.helpers.ArgumentParser):
     parser.add_argument('-keep_alive', default=False, help='After training end, keeps process alive (useful for looking at the TB logs)')
     parser.add_argument('-seed', default='none', parser=parser.int_or_none_parser)
     parser.add_argument('-gpu', default='auto', help='use this gpu')
-    parser.add_argument('-wandb_project_name', default='crafter-ood')
+    
+    parser.add_argument('-wandb_project_name', default='crafter-ood-project')
+    parser.add_argument('-wandb_entity', default='crafter-ood-project')
+    parser.add_argument('-wandb_tag', default='crafter-ood-project')
+    
     parser.add_argument('-logger.type', default='wandb')
     parser.add_argument('-logger.sb3.sync_tb', default=True)
     parser.add_argument('-logger.sb3.monitor_gym', default=True)
     parser.add_argument('-logger.sb3.save_code', default=True)
 
     # Training
-    parser.add_argument('-max_train_steps', default=1_000_000)
+    parser.add_argument('-max_train_steps', default=1_000_000) # todo: default=1_000_000
     parser.add_argument('-log_every_n_episodes', default=100)
     parser.add_argument('-opt_all.lr', default=1e-4)
 
@@ -26,13 +30,18 @@ def register_args(parser: framework.helpers.ArgumentParser):
     parser.add_argument('-crf.max_ep_len', default=10_000)
     parser.add_argument('-crf.render_scoreboard', default=True)
     parser.add_argument('-crf.save_video', default=False)
-    parser.add_argument('-eval_n_steps', default=50_000)
+    parser.add_argument('-eval_n_steps', default=50_000) # todo: 50_000
     parser.add_argument('-eval_n_episodes', default=5)
     parser.add_argument('-el_vars', default='')
     parser.add_argument('-el_freq_train', default='100,0,0,0')
     parser.add_argument('-el_freq_valid', default='100,0,0,0')
     parser.add_argument('-el_app_freq_train', default='sssss')
     parser.add_argument('-el_app_freq_valid', default='sssss')
+
+
+    # Added by Chris Emezue on 13.04
+    parser.add_argument('-save_folder_for_attn_maps', default='./')
+
 
     # Model
     parser.add_argument('-rsn.type', default='', choice=['', 'oc_sa', 'oc_ca'])

@@ -152,6 +152,8 @@ class TrainingHelper:
         assert self.args.profile_name is not None or self.use_wandb, "Either name must be specified or W&B should be used"
 
         wandb_args = {
+            "entity":f"{self.args.wandb_entity}",
+            "tags":[f"{self.args.wandb_tag}"],
             "project": self.wandb_project_name,
             "config": self.arg_parser.to_dict(),
             "sync_tensorboard": self.args.logger.sb3.sync_tb,  # auto-upload sb3's tensorboard metrics
