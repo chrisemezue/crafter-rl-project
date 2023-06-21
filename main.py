@@ -41,6 +41,8 @@ def register_args(parser: framework.helpers.ArgumentParser):
 
     # Added by Chris Emezue on 13.04
     parser.add_argument('-save_folder_for_attn_maps', default='./')
+    parser.add_argument('-save_slot_masks', default=True)
+    parser.add_argument('-save_epsiode_observations', default=True)
 
 
     # Model

@@ -432,13 +432,15 @@ class EvalCallback(EventCallback):
 
                 ## Added by Chris Emezue on 13.04.2023
                
-                # Save the episode observations
-                with open(os.path.join(SAVE_FOLDER_FOR_ATTN_MAPS,f'episode_observations_{SAVE_STEP}'),'wb') as f:
-                    pickle.dump(obs,f)
+                if (self.helper.args.save_epsiode_observations):
+                    # Save the episode observations
+                    with open(os.path.join(SAVE_FOLDER_FOR_ATTN_MAPS,f'episode_observations_{SAVE_STEP}'),'wb') as f:
+                        pickle.dump(obs,f)
 
-                # Save the slot attention masks
-                with open(os.path.join(SAVE_FOLDER_FOR_ATTN_MAPS,f'slot_masks_{SAVE_STEP}'),'wb') as f:
-                    pickle.dump(slot_masks,f)
+                if (self.helper.args.save_slot_masks):
+                    # Save the slot attention masks
+                    with open(os.path.join(SAVE_FOLDER_FOR_ATTN_MAPS,f'slot_masks_{SAVE_STEP}'),'wb') as f:
+                        pickle.dump(slot_masks,f)
                 ###
                 print(f'Saved evaluation attention maps to {SAVE_FOLDER_FOR_ATTN_MAPS}')
                 #breakpoint()
