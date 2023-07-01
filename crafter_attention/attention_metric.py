@@ -224,11 +224,13 @@ class AttnMetric:
                         test_tile = np.multiply(curr_envmap, tile_mask)
                         test_tile = test_tile / max(test_tile.reshape(-1)) #L1 norm
 
-                        value = value / max(value.reshape(-1)) #L1 norm
+                        value = np.transpose(value[:,:,0:3], (2, 0, 1))
+                        value = np.multiply(value, tile_mask) / max(value.reshape(-1)) #L1 norm
+                        value = np.transpose(value, (1, 2, 0))
 
                         diff = test_tile.permute(1, 2, 0) - value[:, :, :3]
 
-                        if j==7 and k==0:
+                        if j==3 and k==8:
                             plt.figure()
                             plt.subplot(2,2,1)
                             plt.imshow(test_tile.permute(1, 2, 0))
