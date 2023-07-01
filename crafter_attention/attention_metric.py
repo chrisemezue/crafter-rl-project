@@ -13,6 +13,12 @@ from sklearn.neighbors import KernelDensity
 import io
 
 
+local_root = 'E:/2023_ConnorCrafterAttention'
+
+fig_root = f"{local_root}/figures"
+root = f"{local_root}/crafter-curated"
+save_root = f"{local_root}/results/envmaps"
+
 class CPU_Unpickler(pickle.Unpickler):
     def find_class(self, module, name):
         if module == 'torch.storage' and name == '_load_from_bytes':
@@ -189,14 +195,14 @@ class AttnMetric:
         thres = 2
         for i in range(n_frames):
             # print(i)
-            for j, h_start in enumerate(np.arange(0, self.imgsize, self.objsize)):
-                for k, w_start in enumerate(np.arange(0, self.imgsize, self.objsize)):
+            for j, h_start in enumerate(np.arange(0, envmaps.shape[2], self.objsize)):
+                for k, w_start in enumerate(np.arange(0, envmaps.shape[3], self.objsize)):
 
                     curr_envmap = envmaps[i, :, h_start:h_start + self.objsize, w_start:w_start + self.objsize].cpu()
                     plt.figure()
                     plt.imshow(curr_envmap.permute(1, 2, 0))
                     plt.savefig(
-                        "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/crafter-curated/tile.png")
+                        f"{root}/tile.png")
                     # curr_envmap = (curr_envmap - np.mean(curr_envmap))/(np.std(curr_envmap)+1e-4)
                     # L2 norm normalization => cause Nan value
                     # print("norm of the orignal object:", np.linalg.norm(curr_envmap))
@@ -214,39 +220,27 @@ class AttnMetric:
                         # calcualte distance with L2 norm
                         # print(curr_envmap.shape)
 
-                        diff = curr_envmap.permute(1, 2, 0) - value[:, :, :3]
-                        if index == 9:
-                            diff9 = diff
-                            print("diff9 shape:", diff9.shape)
-                            print(diff9[:, :, 0])
-                            plt.figure()
-                            plt.imshow(diff9)
-                            plt.savefig(
-                                "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/crafter-curated/diff9.png")
+                        tile_mask = obj_dict_mask[key]
+                        test_tile = np.multiply(curr_envmap, tile_mask)
+                        test_tile = test_tile / max(test_tile.reshape(-1)) #L1 norm
 
-                        if index == 55:
-                            diff55 = diff
-                            print("diff55 shape:", diff55.shape)
-                            print(diff55[:, :, 0])
-                            print("diff between diff55 and diff9:", torch.sum(diff9 - diff55))
-                            plt.figure()
-                            plt.imshow(diff55 - diff9)
-                            plt.savefig(
-                                "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/crafter-curated/diff55_9.png")
+                        value = value / max(value.reshape(-1)) #L1 norm
 
-                        mask_diff = (diff[obj_dict_mask[key], :]) / np.sum(obj_dict_mask[key][::])
-                        if index == 9 or index == 55:
-                            # curr_mask = np.repeat(np.expand_dims(obj_dict_mask[key], axis = 2), 3,axis = 2)
+                        diff = test_tile.permute(1, 2, 0) - value[:, :, :3]
+
+                        if j==7 and k==0:
                             plt.figure()
+                            plt.subplot(2,2,1)
+                            plt.imshow(test_tile.permute(1, 2, 0))
+                            plt.subplot(2,2,2)
                             plt.imshow(value)
-                            plt.savefig(
-                                "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/crafter-curated/template_object_%d.png" % index)
+                            plt.subplot(2,2,3)
+                            plt.imshow(tile_mask)
+                            plt.subplot(2,2,4)
+                            plt.imshow(np.abs(diff))
+                            plt.savefig(f"{fig_root}/compare_tiles{index}.png")
 
-                            # plt.figure()
-                            # plt.imshow(diff)
-                            # plt.savefig("/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/crafter-curated/diff%d.png"%index)
-
-                        curr_dist.append(torch.sum(mask_diff[::] ** 2) / np.sum(obj_dict_mask[key][::]))
+                        curr_dist.append(torch.mean(diff[::] ** 2))
                         # curr_dist.append(np.linalg.norm(mask_diff))
                         # print(curr_dist)
                         # mask_curr_envmap = curr_envmap[:,obj_dict_mask[key]]
@@ -255,13 +249,13 @@ class AttnMetric:
                         # obj_dict[key] = curr_envmap
                         # is_break = True
                         # frame_obj_maps[i,j,k] = int(key)
-                    print(curr_dist)
+                    #print(curr_dist)
                     obj_index = np.argmin(curr_dist)
                     frame_obj_maps[i, j, k] = obj_index
                     # np.where(curr_dist == min(curr_dist))
-                    print("this is obj %d:" % obj_index)
-                    print("mininum dist:", min(curr_dist))
-                    print("distance to obj 9:", curr_dist[9])
+                    #print("this is obj %d:" % obj_index)
+                    #print("mininum dist:", min(curr_dist))
+                    #print("distance to obj 9:", curr_dist[9])
 
                     # else: print("difference between two objects:", np.sum(np.abs(curr_envmap - value)))
 
@@ -334,6 +328,10 @@ def obj_template_generation(pathtofile):
         obj_dict["%d" % i] = image
         # print(image[:,:, -1])
 
+        #plt.figure()
+        #plt.imshow(image)
+        #plt.savefig(f"{fig_root}/object_dict/object%d.png" % i)
+
         # if i == 55:
         #     plt.figure()
         #     plt.imshow(image)
@@ -352,7 +350,7 @@ def obj_dict_mask_gen(obj_dict):
     return obj_dict_mask
 
 
-obj_dict = obj_template_generation("/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/assets")
+obj_dict = obj_template_generation(f"{local_root}/assets")
 obj_dict_mask = obj_dict_mask_gen(obj_dict)
 # print(obj_dict_mask)
 
@@ -497,9 +495,6 @@ obj_size = 16
 
 n_slots = 8
 
-fig_root = "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention"
-root = "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/crafter-curated"
-save_root = "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/results/envmaps"
 for patch_size in patch_sizes:
     for training_ep in training_eps:
         for phase in phases:
@@ -528,12 +523,12 @@ for patch_size in patch_sizes:
             #     print(curr_save_dir + "/envmap_frame_%d.jpeg" % ti)
             #     plt.savefig(curr_save_dir + "/envmap_frame_%d.jpeg" % ti)
 
-            obj_dict, frame_obj_maps = metric_cal.ObjectDict(metric_cal.envmaps[:1, :, :16, 16:32], obj_dict,
+            obj_dict, frame_obj_maps = metric_cal.ObjectDict(metric_cal.envmaps[:1, :, :, :], obj_dict,
                                                              obj_dict_mask)
             plt.figure()
             plt.imshow(metric_cal.envmaps[0, :, :, :].permute(1, 2, 0))
             plt.savefig(
-                "/home/xuan/projects/def-bashivan/xuan/crafter-ood/crafter_attention/crafter-curated/env_frame1.jpeg")
+                f"{fig_root}/env_frame1.jpeg")
             # for key in obj_dict.keys():
             #     plt.figure()
             #     print("current save object image shape:", np.transpose(obj_dict[key],(1,2,0)).shape)
