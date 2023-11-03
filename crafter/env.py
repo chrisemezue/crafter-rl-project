@@ -53,6 +53,8 @@ class Env(BaseClass):
         self.metadata = None
         self._double_render = double_render
         self._render_to_disc = render_to_disc
+
+        self._total_steps = 0
     
     @property
     def observation_space(self):
@@ -116,6 +118,18 @@ class Env(BaseClass):
             reward = 0.0
         return obs, reward, done, info
     
+    def list_objects(self):      
+        size = (288, 288)
+        unit = size // self._view
+        object_string = self._local_view(self._player, unit)
+
+        print(self._total_steps)
+        print(object_string)
+
+        self._total_steps += 1
+
+        return object_string
+    
     def render_to_disk(self, size=None):
         size = (288, 288)
         unit = size // self._view
@@ -151,6 +165,7 @@ class Env(BaseClass):
     def _obs(self):
         if self._render_to_disc:
             self.render_to_disk()
+        self.list_objects()
         return self.render()
     
     def _update_time(self):

@@ -330,6 +330,34 @@ class LocalView:
         self._unit = np.array(unit)
         self._center = np.array(player.pos)
         canvas = np.zeros(tuple(self._grid * unit) + (3,), np.uint8) + 127
+        for x in range(self._grid[0]):
+            for y in range(self._grid[1]):
+                pos = self._center + np.array([x, y]) - self._offset
+                if not _inside((0, 0), pos, self._area):
+                    continue
+                texture = self._textures.get(self._world[pos][2], unit)
+                _draw(canvas, np.array([x, y]) * unit, texture)
+        for obj in self._world.objects:
+            pos = obj.pos - self._center + self._offset
+            if not _inside((0, 0), pos, self._grid):
+                continue
+            if self._world.total_dreamer:
+                texture = self._textures.get(obj.texture, unit)
+            else:
+                texture = self._textures.get(obj.texture_vars, unit)
+            _draw_alpha(canvas, pos * unit, texture)
+        canvas = self._light(canvas, self._world.daylight)
+        if player.sleeping:
+            canvas = self._sleep(canvas)
+        # if player.health < 1:
+        #     canvas = self._tint(canvas, (128, 0, 0), 0.6)
+
+        return canvas
+    
+    def get_objects(self, player, unit):
+        self._unit = np.array(unit)
+        self._center = np.array(player.pos)
+        canvas = np.zeros(tuple(self._grid * unit) + (3,), np.uint8) + 127
         all_textures = {}
         for x in range(self._grid[0]):
             for y in range(self._grid[1]):
@@ -360,8 +388,8 @@ class LocalView:
             texture_string += str(position[0]) + ',' + str(position[1]) + ',' + texture
         print(texture_string)
 
-        return canvas
-    
+        return texture_string
+
     def _light(self, canvas, daylight):
         night = canvas
         if daylight < 0.5:
