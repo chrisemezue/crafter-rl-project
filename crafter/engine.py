@@ -330,6 +330,7 @@ class LocalView:
         self._unit = np.array(unit)
         self._center = np.array(player.pos)
         canvas = np.zeros(tuple(self._grid * unit) + (3,), np.uint8) + 127
+        all_textures = {}
         for x in range(self._grid[0]):
             for y in range(self._grid[1]):
                 pos = self._center + np.array([x, y]) - self._offset
@@ -343,14 +344,22 @@ class LocalView:
                 continue
             if self._world.total_dreamer:
                 texture = self._textures.get(obj.texture, unit)
+                all_textures[pos] = obj.texture
             else:
                 texture = self._textures.get(obj.texture_vars, unit)
+                all_textures[pos] = obj.texture_vars
             _draw_alpha(canvas, pos * unit, texture)
         canvas = self._light(canvas, self._world.daylight)
         if player.sleeping:
             canvas = self._sleep(canvas)
         # if player.health < 1:
         #     canvas = self._tint(canvas, (128, 0, 0), 0.6)
+
+        texture_string = ''
+        for position, texture in all_textures:
+            texture_string += str(position[0]) + ',' + str(position[1]) + ',' + texture
+        print(texture_string)
+
         return canvas
     
     def _light(self, canvas, daylight):
